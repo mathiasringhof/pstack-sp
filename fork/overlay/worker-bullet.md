@@ -1,0 +1,1 @@
+- When your kickoff sends you to a pstack skill, that is a real skill invocation. Read `<path>/../<name>/SKILL.md` in full before you act on it, with `<path>` the folder that holds this file. Your skill list hides these skills, so a missing entry does not mean the skill is absent.

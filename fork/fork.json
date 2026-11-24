@@ -1,0 +1,16 @@
+{
+  "repo": "mathiasringhof/pstack-sp",
+  "marketplace": "pstack-sp",
+  "revision": 1,
+  "visibleSkills": [
+    "setup-pstack"
+  ],
+  "evidence": {
+    "skills/unslop/SKILL.md": "Rule numbers are stable ids that other skills cite.",
+    "skills/architect/SKILL.md": "sketch two different shapes",
+    "skills/poteto-mode/SKILL.md": "only load from a slash command"
+  },
+  "mapsOnly": {
+    "poteto-help": "It names skills to describe them, and it already says to read a file before quoting it. A rule to follow each named skill would start work that a help question must not start."
+  }
+}
