@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 In Claude Code, read [the Claude Code adapter](../../docs/harness/claude-code.md) once per session before you follow this skill. It maps the Cursor names in pstack skills to Claude Code.
 
+When a step in this skill sends you to another pstack skill, that is a real skill invocation. Read `../<name>/SKILL.md` in full, then follow it, before you act on the step. Your skill list hides pstack skills and the `Skill` tool refuses them, so nothing else loads one for you, and working from the name drifts. [Running a pstack skill](../../docs/harness/claude-code.md#running-a-pstack-skill) lists the thoughts that lead to a skipped read.
+
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.cursor/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
 ## 1. Interview the repo, not the user

@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 In Claude Code, read [the Claude Code adapter](../../docs/harness/claude-code.md) once per session before you follow this skill. It maps the Cursor names in pstack skills to Claude Code.
 
+When a step in this skill sends you to another pstack skill, that is a real skill invocation. Read `../<name>/SKILL.md` in full, then follow it, before you act on the step. Your skill list hides pstack skills and the `Skill` tool refuses them, so nothing else loads one for you, and working from the name drifts. [Running a pstack skill](../../docs/harness/claude-code.md#running-a-pstack-skill) lists the thoughts that lead to a skipped read.
+
 A guided flow for turning the user's working conventions into a skill agents will follow. The output is one `-mode` skill tailored to them (e.g. `jay-mode`, `priya-mode`).
 
 This skill orchestrates three others: an inline mining pass (see step 1), Cursor's built-in `create-skill` (authoring), and the **unslop** skill (prose discipline). It sequences them. It doesn't replace them.

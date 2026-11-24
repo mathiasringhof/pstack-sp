@@ -2,6 +2,28 @@
 
 pstack skills use Cursor names. In Claude Code, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`. If a Cursor field has no row, drop it and say so. Never pass a field or value the tool schema rejects.
 
+## Running a pstack skill
+
+When a step sends you to a pstack skill, that is a real skill invocation. Read that skill's `SKILL.md` in full at `<pstack>/skills/<name>/SKILL.md`, then follow it, before you act. Read it when its step comes, not before. The same holds inside that skill.
+
+pstack skills only load from a slash command. Your skill list hides all but the setup skill, and the `Skill` tool refuses the rest. So a skill reaches you only when you `Read` its file. Working from the name skips that read and drifts.
+
+Each of these thoughts means you are about to skip a skill.
+
+| Thought | What is true |
+| --- | --- |
+| "I know what unslop, architect, or tdd means." | You know the word. The rules are in the file. |
+| "I know the steps for this kind of task." | The playbook file holds the steps. Open it and copy them. |
+| "The index entry already states the principle." | The entry names when the principle applies. The leaf holds the rule. |
+| "The `Skill` tool refused, so the skill is not installed." | It refuses by design. `Read` the file. |
+| "This task is too small for the skill." | The operator asked for pstack, and the step names the skill. A small task makes the read cheap, not optional. |
+| "I read it earlier." | Go on if you can quote it. After a compaction, or in a subagent, you cannot. Read it again. The same goes for the adapter. |
+| "I will apply it at the end." | Each trigger names its moment. Before commit means before commit. |
+| "Reading it wastes context." | The file is the instruction, not bulk. Guard the context window by delegating the work, not by skipping the read. |
+| "My subagent will follow it." | A subagent sees only its kickoff. Put the path of the `SKILL.md` in the brief. |
+
+If the file does not exist, pstack does not bundle the skill. Use a skill of that name from your skill list if there is one. Otherwise say so in one line and go on. Only the operator waives a skill, and only in so many words.
+
 ## Tools
 
 | Cursor | Claude Code |

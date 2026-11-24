@@ -1,5 +1,7 @@
 # pstack
 
+> **This is pstack-sp, an unofficial fork of [pstack](https://github.com/cursor/plugins/tree/main/pstack) for Claude Code.** pstack is Lauren Tan's work. This fork is the Claude Code tree she ships, plus text that makes the agent read a skill's file when a step names it. You still decide when pstack runs, and the fork adds no hook. Below this note is her README. Only the Claude Code install commands differ. [FORK.md](./FORK.md) lists every difference and how to check it.
+
 i'm [poteto](https://x.com/poteto). i'm not a president or ceo, but i've worked with millions of lines of code at Meta, Netflix, and Cursor. i'm also on the react core team where i help build and maintain react compiler.
 
 there's a growing sense that ai writes too much slop code. i agree. i don't want to ship like a team of twenty slop artists. throughput without quality is not a goal i aspire to. if you want to go fast, go deep first. 
@@ -21,11 +23,11 @@ fork it. improve it. make it yours. PRs are welcome!
 in claude code:
 
 ```bash
-/plugin marketplace add cursor/plugins
-/plugin install pstack@cursor-plugins
+/plugin marketplace add mathiasringhof/pstack-sp
+/plugin install pstack@pstack-sp
 ```
 
-claude code leaves auto-update off for third-party marketplaces, so pstack stays on the version you installed. to turn it on, run `/plugin`, open the **marketplaces** tab, select `cursor-plugins`, and choose **enable auto-update**. to update once by hand, run `claude plugin update pstack@cursor-plugins`.
+claude code leaves auto-update off for third-party marketplaces, so pstack stays on the version you installed. to turn it on, run `/plugin`, open the **marketplaces** tab, select `pstack-sp`, and choose **enable auto-update**. to update once by hand, run `claude plugin update pstack@pstack-sp`.
 
 claude code prefixes plugin commands and agents, so `/poteto-mode` is `/pstack:poteto-mode`. the [claude code adapter](./docs/harness/claude-code.md) maps every other cursor name. in claude code, `/pstack:setup-pstack` writes your model choices to `~/.claude/rules/pstack-models.md`, and a step that needs a cursor-only feature, such as bugbot or automations, is skipped with a one-line note.
 

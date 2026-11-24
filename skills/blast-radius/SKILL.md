@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Blast radius
 
+When a step in this skill sends you to another pstack skill, that is a real skill invocation. Read `../<name>/SKILL.md` in full, then follow it, before you act on the step. Your skill list hides pstack skills and the `Skill` tool refuses them, so nothing else loads one for you, and working from the name drifts. [Running a pstack skill](../../docs/harness/claude-code.md#running-a-pstack-skill) lists the thoughts that lead to a skipped read.
+
 Find what a change breaks somewhere else, before it ships. Use for "blast radius of X", "what could this break", or reviewing a small diff you don't trust yet.
 
 Companion to `how` and `why`. `how` tells you what the code does. `why` tells you why it's shaped that way. Blast radius tells you what it breaks somewhere else.

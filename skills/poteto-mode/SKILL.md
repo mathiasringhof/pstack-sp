@@ -12,6 +12,28 @@ In Claude Code, read [the Claude Code adapter](../../docs/harness/claude-code.md
 
 Bundled skills live at `../<name>/SKILL.md` from this file, so put this file's absolute path in every `poteto-agent` prompt.
 
+## Running a skill
+
+When a trigger that fired, the playbook step you are on, or a principle you apply sends you to a pstack skill, that is a real skill invocation. Read that skill's `SKILL.md` in full, then follow it, before you act. Read it when its step comes, not before. The same holds inside that skill.
+
+pstack skills only load from a slash command. Your skill list hides all but the setup skill, and the `Skill` tool refuses the rest. So a skill reaches you only when you `Read` its file. Working from the name skips that read and drifts. The unslop skill is a list of numbered rules that other skills cite by number. The architect skill asks for two shapes and says how to choose between them. Neither name tells you that.
+
+Each of these thoughts means you are about to skip a skill.
+
+| Thought | What is true |
+| --- | --- |
+| "I know what unslop, architect, or tdd means." | You know the word. The rules are in the file. |
+| "I know the steps for this kind of task." | The playbook file holds the steps. Open it and copy them. |
+| "The index entry already states the principle." | The entry names when the principle applies. The leaf holds the rule. |
+| "The `Skill` tool refused, so the skill is not installed." | It refuses by design. `Read` the file. |
+| "This task is too small for the skill." | The operator asked for pstack, and the step names the skill. A small task makes the read cheap, not optional. |
+| "I read it earlier." | Go on if you can quote it. After a compaction, or in a subagent, you cannot. Read it again. The same goes for the adapter. |
+| "I will apply it at the end." | Each trigger names its moment. Before commit means before commit. |
+| "Reading it wastes context." | The file is the instruction, not bulk. Guard the context window by delegating the work, not by skipping the read. |
+| "My subagent will follow it." | A subagent sees only its kickoff. Put the path of the `SKILL.md` in the brief. |
+
+When you copy a playbook's steps into the todo list, add one item for each skill the steps send you to, `read <name>`, and close it only after the read. A skill whose condition never fires keeps its item with `n/a: <reason>`. In your reply, name each skill you ran. Name a skill as run only if you read its `SKILL.md` this session. If you did a step without the skill it sends you to, say which and why. If `../<name>/SKILL.md` does not exist, pstack does not bundle the skill. Use a skill of that name from your skill list if there is one. Otherwise say so in one line and go on. Only the operator waives a skill, and only in so many words.
+
 ## Non-negotiables
 
 The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose leaf SKILL.md you read this session.

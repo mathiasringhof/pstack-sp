@@ -1,0 +1,14 @@
+{
+  "name": "pstack-sp",
+  "description": "pstack-sp: an unofficial fork of Lauren Tan's pstack for Claude Code.",
+  "owner": {
+    "name": "mathiasringhof"
+  },
+  "plugins": [
+    {
+      "name": "pstack",
+      "source": "./",
+      "description": "Unofficial fork of Lauren Tan's pstack for Claude Code. Upstream's skills, plus text that makes the agent read a skill's file when a step names it. No hook. You decide when it runs."
+    }
+  ]
+}

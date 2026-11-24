@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 In Claude Code, read [the Claude Code adapter](../../docs/harness/claude-code.md) once per session before you follow this skill. It maps the Cursor names in pstack skills to Claude Code.
 
+When a step in this skill sends you to another pstack skill, that is a real skill invocation. Read `../<name>/SKILL.md` in full, then follow it, before you act on the step. Your skill list hides pstack skills and the `Skill` tool refuses them, so nothing else loads one for you, and working from the name drifts. [Running a pstack skill](../../docs/harness/claude-code.md#running-a-pstack-skill) lists the thoughts that lead to a skipped read.
+
 A formal check proves a property of what it describes. When the code changes and the verification does not, the check can keep passing while it describes code that no longer exists. That pass is the dangerous case, because it looks like a proof. This skill is the upkeep loop for a verify skill that `/create-formal-verification-skill` generated, or for any project-local skill that runs a model checker, prover, or code-level verifier against named code. The project-local skill handles a change that an agent makes while it uses that skill. This skill handles the changes that skipped it: merges, edits made without the skill, and drift that builds up across many commits.
 
 ## Outcomes
