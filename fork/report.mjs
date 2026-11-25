@@ -7,7 +7,7 @@
 //
 //   node fork/report.mjs <out dir of one fork/eval.sh run>
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const out = process.argv[2];
@@ -16,13 +16,13 @@ if (!out || !existsSync(join(out, "variants.tsv"))) {
   process.exit(2);
 }
 
-const variants = readFileSync(join(out, "variants.tsv"), "utf8")
+const listed = readFileSync(join(out, "variants.tsv"), "utf8")
   .trim()
   .split("\n")
   .map((line) => line.split("\t"))
-  .map(([dir, label]) => ({ dir, label, file: join(out, dir, "aggregate-result.json") }))
-  .filter((variant) => existsSync(variant.file))
-  .map((variant) => ({ ...variant, result: JSON.parse(readFileSync(variant.file, "utf8")) }));
+  .map(([dir, label]) => ({ dir, label, file: join(out, dir, "aggregate-result.json") }));
+const failed = listed.filter((variant) => !existsSync(variant.file));
+const variants = listed.filter((variant) => existsSync(variant.file)).map((variant) => ({ ...variant, result: JSON.parse(readFileSync(variant.file, "utf8")) }));
 if (variants.length === 0) {
   console.error(`no results under ${out}. Every variant failed before it wrote one.`);
   process.exit(1);
@@ -33,15 +33,25 @@ if (variants.length === 0) {
 function* blocks(value) {
   if (Array.isArray(value)) for (const item of value) yield* blocks(item);
   else if (value && typeof value === "object") {
-    if (value.type === "tool_use" || value.type === "text") yield value;
+    if (value.type === "tool_use" || value.type === "text" || value.type === "tool_result") yield value;
     for (const child of Object.values(value)) yield* blocks(child);
   }
 }
 // A pstack file is any file under the plugin root the run loaded, named by its path from that root.
 // Matching on `skills/` alone would miss agents/worker.md and count skill files from other places.
-function readTrace(path, root) {
+// macOS reaches /tmp as /private/tmp too, so compare real paths where the file still exists.
+const real = (path) => {
+  try {
+    return realpathSync(path);
+  } catch {
+    return resolve(path);
+  }
+};
+function readTrace(path, root, caseNames) {
   if (!path || !existsSync(path)) return null;
-  const prefix = `${resolve(root)}/`;
+  const top = real(root);
+  const prefix = `${top}/`;
+  const answerKey = new RegExp(`samples/(?:${caseNames.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})/`);
   const trace = { files: new Set(), agents: 0, withWorker: 0, withSkillPath: 0, timeline: [], sawCases: [] };
   for (const line of readFileSync(path, "utf8").split("\n")) {
     let message;
@@ -53,12 +63,18 @@ function readTrace(path, root) {
     const fromAgent = message.type === "assistant" || message.message?.role === "assistant";
     for (const block of blocks(message)) {
       if (block.type === "text" && fromAgent && typeof block.text === "string" && block.text.trim()) trace.timeline.push({ said: block.text.trim() });
+      // The cases sit in the plugin as samples/<case>/. A run that lists or searches there can see what is checked:
+      // a tool result that names a case folder, a call into samples/, or a Glob or Grep over the plugin root or above it.
+      if (block.type === "tool_result") {
+        const shown = typeof block.content === "string" ? block.content : JSON.stringify(block.content ?? "");
+        if (answerKey.test(shown)) trace.sawCases.push(`a tool result named ${shown.match(answerKey)[0]}`);
+      }
       if (block.type !== "tool_use") continue;
       const input = JSON.stringify(block.input ?? {});
-      // The cases sit in the plugin as samples/. A run that looks there can see what is checked.
-      if (input.includes(`${prefix}samples`)) trace.sawCases.push(`${block.name} ${input.slice(0, 200)}`);
+      const searched = typeof block.input?.path === "string" ? real(block.input.path) : null;
+      if (input.includes(`${prefix}samples`) || (searched && (top === searched || top.startsWith(`${searched}/`)))) trace.sawCases.push(`${block.name} ${input.slice(0, 200)}`);
       if (block.name === "Read" && typeof block.input?.file_path === "string") {
-        const file = resolve(block.input.file_path);
+        const file = real(block.input.file_path);
         if (file.startsWith(prefix)) {
           trace.files.add(file.slice(prefix.length));
           trace.timeline.push({ read: file.slice(prefix.length) });
@@ -91,6 +107,7 @@ for (const variant of variants) {
   const plugin = result.suite?.plugins?.[0];
   lines.push(`- **${variant.label}**: pstack ${plugin?.version ?? "?"}, Claude Code ${result.claudeVersion}, model ${result.suite?.modelOverride ?? "default"}, effort ${effort}${result.partial ? `. Stopped early (${result.partialReason}), so its numbers are not comparable` : ""}.`);
 }
+for (const variant of failed) lines.push(`- **${variant.label}**: no result. It failed before it wrote one, so this comparison is incomplete. Its output is above, in the eval.sh log.`);
 lines.push("", "Each cell is runs that passed the check out of runs that finished.", "");
 
 const section = (title, keep) => {
@@ -133,7 +150,7 @@ const misses = [];
 const leaks = [];
 let traces = 0;
 for (const name of cases) {
-  const perVariant = variants.map((variant) => runsOf(variant, name).filter(graded).map((run) => ({ run, trace: readTrace(run.tracePath, variant.result.suite?.plugins?.[0]?.path ?? join(out, "..", variant.dir)) })));
+  const perVariant = variants.map((variant) => runsOf(variant, name).filter(graded).map((run) => ({ run, trace: readTrace(run.tracePath, variant.result.suite?.plugins?.[0]?.path ?? join(out, "..", variant.dir), cases) })));
   const files = [...new Set(perVariant.flatMap((runs) => runs.flatMap(({ trace }) => (trace ? [...trace.files] : []))))].sort();
   traces += perVariant.flat().filter(({ trace }) => trace).length;
   if (files.length > 0) {
@@ -152,7 +169,8 @@ for (const name of cases) {
     }
   }
   perVariant.forEach((runs, index) => {
-    runs.forEach(({ run, trace }, number) => {
+    runs.forEach(({ run, trace }) => {
+      const number = runsOf(variants[index], name).indexOf(run);
       if (trace?.sawCases.length) leaks.push(`- ${labels[index]}, ${name}, run ${number + 1}: ${trace.sawCases.map((call) => `\`${call}\``).join("; ")}`);
       const skipped = (run.graders ?? []).filter((grader) => grader.name.startsWith("reads-") && !grader.passed).map((grader) => grader.name);
       if (skipped.length === 0) return;
@@ -173,3 +191,7 @@ writeFileSync(join(out, "misses.md"), misses.length ? `# What the agent said in 
 console.log(lines.join("\n"));
 console.log(`Saved: ${join(out, "report.md")}`);
 console.log(`What the agent said when it skipped: ${join(out, "misses.md")}`);
+if (failed.length) {
+  console.error(`no result from: ${failed.map((variant) => variant.label).join(", ")}. The comparison is incomplete.`);
+  process.exit(1);
+}

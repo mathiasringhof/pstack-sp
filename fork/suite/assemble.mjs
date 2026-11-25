@@ -26,9 +26,15 @@ const setup = [
   "set -euo pipefail",
   ...files.flatMap(([path, body], index) => [`mkdir -p "$(dirname "${path}")"`, `cat > "${path}" <<'FILE_${index}'`, body.replace(/\n$/, ""), `FILE_${index}`]),
   "if command -v git >/dev/null 2>&1; then",
-  "  git init -q . && git add -A",
+  // No template: git's sample hooks are readable in .git/hooks and use words a run must not see.
+  "  git init -q --template= . && git add -A",
   '  git -c user.name="Dana Okafor" -c user.email="dana@orders.example" commit -q -m "retry failed provider calls with backoff"',
   '  git config user.name "Dana Okafor" && git config user.email "dana@orders.example"',
+  // The sandbox home gets a git identity named after the tool that made it. Replace it, but only
+  // when this workspace sits directly in $HOME, as the sandbox lays it out (home/cwd).
+  '  if [ -f "$HOME/.gitconfig" ] && [ "$(cd .. && pwd -P)" = "$(cd "$HOME" && pwd -P)" ]; then',
+  '    git config --global user.name "Dana Okafor" && git config --global user.email "dana@orders.example"',
+  "  fi",
   "fi",
   "",
 ].join("\n");

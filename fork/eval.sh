@@ -24,12 +24,15 @@ tier=read
 pilot=false
 also=()
 pass=()
+value() { # <option> [<value>]: stop unless the option has a value that is not another option
+  if [ $# -lt 2 ] || [ "${2#--}" != "$2" ]; then echo "$1 needs a value" >&2; exit 2; fi
+}
 while [ $# -gt 0 ]; do
   case "$1" in
-    --tier) tier="$2"; shift 2 ;;
-    --also) also+=("$2"); shift 2 ;;
+    --tier) value "$@"; tier="$2"; shift 2 ;;
+    --also) value "$@"; also+=("$2"); shift 2 ;;
     --pilot) pilot=true; shift ;;
-    --effort) export CLAUDE_CODE_EFFORT_LEVEL="$2"; shift 2 ;;
+    --effort) value "$@"; export CLAUDE_CODE_EFFORT_LEVEL="$2"; shift 2 ;;
     *) pass+=("$1"); shift ;;
   esac
 done
