@@ -1,0 +1,36 @@
+schema_version: "1.1"
+name: explain-retry
+tags: [read]
+runs: 3
+execution:
+  prompt: "/pstack:poteto-mode how does retry work here? are we sure the backoff is right?"
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, TodoWrite]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: reads-adapter
+    type: tool_used
+    tool: Read
+    input_match: 'docs/harness/claude-code\.md'
+  - name: reads-playbook-investigation
+    type: tool_used
+    tool: Read
+    input_match: 'playbooks/investigation\.md'
+  - name: reads-unslop
+    type: tool_used
+    tool: Read
+    input_match: 'skills/unslop/SKILL\.md'
+  - name: leaves-architect-alone
+    type: tool_used
+    tool: Read
+    input_match: 'skills/architect/SKILL\.md'
+    min: 0
+    max: 0
+  - name: keeps-skill-reads-under-13
+    type: tool_used
+    tool: Read
+    input_match: 'skills/[^/"]+/SKILL\.md'
+    min: 0
+    max: 12

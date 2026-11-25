@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: review-retry
+tags: [read]
+runs: 3
+execution:
+  prompt: "/pstack:poteto-mode src/retry.js is hard to follow. what would you change, and is it worth it?"
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, TodoWrite]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: reads-playbook-investigation
+    type: tool_used
+    tool: Read
+    input_match: 'playbooks/investigation\.md'
+  - name: reads-principle-minimize-reader-load
+    type: tool_used
+    tool: Read
+    input_match: 'skills/principle-minimize-reader-load/SKILL\.md'
+  - name: reads-unslop
+    type: tool_used
+    tool: Read
+    input_match: 'skills/unslop/SKILL\.md'
+  - name: keeps-skill-reads-under-13
+    type: tool_used
+    tool: Read
+    input_match: 'skills/[^/"]+/SKILL\.md'
+    min: 0
+    max: 12

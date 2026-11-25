@@ -1,0 +1,42 @@
+schema_version: "1.1"
+name: fix-refund
+tags: [write]
+runs: 3
+execution:
+  prompt: "/pstack:poteto-mode refunding an order that was already refunded hangs for about six seconds before it fails. it should fail right away. fix it"
+  max_turns: 120
+  timeout_seconds: 1800
+  allowed_tools: [Read, Glob, Grep, TodoWrite, Agent]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: reads-playbook-bug-fix
+    type: tool_used
+    tool: Read
+    input_match: 'playbooks/bug-fix\.md'
+  - name: reads-principle-fix-root-causes
+    type: tool_used
+    tool: Read
+    input_match: 'skills/principle-fix-root-causes/SKILL\.md'
+  - name: reads-tdd
+    type: tool_used
+    tool: Read
+    input_match: 'skills/tdd/SKILL\.md'
+  - name: reads-principle-prove-it-works
+    type: tool_used
+    tool: Read
+    input_match: 'skills/principle-prove-it-works/SKILL\.md'
+  - name: reads-technical-writing
+    type: tool_used
+    tool: Read
+    input_match: 'skills/technical-writing/SKILL\.md'
+  - name: reads-unslop
+    type: tool_used
+    tool: Read
+    input_match: 'skills/unslop/SKILL\.md'
+  - name: keeps-skill-reads-under-19
+    type: tool_used
+    tool: Read
+    input_match: 'skills/[^/"]+/SKILL\.md'
+    min: 0
+    max: 18

@@ -1,0 +1,34 @@
+schema_version: "1.1"
+name: teach-retry
+tags: [read]
+runs: 3
+execution:
+  prompt: "/pstack:teach how retries work here"
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, TodoWrite]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: reads-adapter
+    type: tool_used
+    tool: Read
+    input_match: 'docs/harness/claude-code\.md'
+  - name: reads-how
+    type: tool_used
+    tool: Read
+    input_match: 'skills/how/SKILL\.md'
+  - name: reads-why
+    type: tool_used
+    tool: Read
+    input_match: 'skills/why/SKILL\.md'
+  - name: reads-unslop
+    type: tool_used
+    tool: Read
+    input_match: 'skills/unslop/SKILL\.md'
+  - name: keeps-skill-reads-under-13
+    type: tool_used
+    tool: Read
+    input_match: 'skills/[^/"]+/SKILL\.md'
+    min: 0
+    max: 12

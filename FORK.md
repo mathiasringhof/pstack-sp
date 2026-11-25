@@ -24,13 +24,13 @@ Superpowers gets skills called with more than its hook. The hook only puts the r
 | Superpowers technique | Taken? | Where it lives here |
 | --- | --- | --- |
 | A session-start hook injects the bootstrap skill | No | Your own `/pstack:poteto-mode` is the bootstrap moment. Claude Code keeps that skill's text in context and re-attaches it after a compaction, so the rules sit there. |
-| A rule that leaves no choice | Yes | "When a step sends you to a pstack skill, that is a real skill invocation. Read that skill's `SKILL.md` in full, then follow it, before you act." It is keyed to the step, so the agent reads a skill when its step comes and not all 59 up front. |
+| A rule that leaves no choice | Yes | In bold, first: "you MUST read that skill's `SKILL.md` in full before you act on the step. You do not have a choice." Then four named non-exceptions. It is keyed to the step, so the agent reads a skill when its step comes and not all 59 up front. |
 | The reason for the rule | Yes | Skills only load from a slash command, the list hides them, the `Skill` tool refuses them, so the read is the only way in. |
 | A table of excuses and what is true | Yes | Nine rows, in `poteto-mode` and in the adapter. |
-| Commitment: announce the skill, one todo per item | Adapted | One todo item per skill the playbook sends the agent to. The reply names each skill it ran, and any step it did without its skill. Both extend rules `poteto-mode` already has for playbook steps and for principles. |
+| Commitment: announce the skill, one todo per item | Yes | The agent writes `Running <name>` and the path before it acts. One todo item per skill the playbook sends it to. The reply names each skill it ran, and any step it did without its skill. The last two extend rules `poteto-mode` already has for playbook steps and for principles. |
 | "Use when" descriptions that never summarize the skill | No | The agent never sees a pstack description, so there is nothing to tune. The same hazard exists in the principles index, and one row of the table covers it. |
-| "If there is a 1% chance a skill applies, invoke it" | No | pstack's triggers and playbooks already say when each skill applies. The fork enforces those. It does not widen them. |
-| Loud markup and capitals | No | The text is written to pstack's own bar for skill prose: short sentences, keep only what changes a decision. |
+| "If there is a 1% chance a skill applies, invoke it" | Adapted | Superpowers needs it because its agent must judge which listed skill is relevant. Here you and the step have already chosen the skill. One judgment remains, whether a trigger fired, so the lever goes there: "If you are unsure whether a trigger fired, it fired." It adds no skill and sends the agent looking for none. |
+| Loud markup and capitals | Partly | One bold rule with one `MUST`, in `poteto-mode`, the adapter, the routing paragraph, and `worker.md`. No tags, and no line of capitals. Revision 1 had none of this and is tagged `v0.15.48-sp.1`, so the two can be measured against each other. |
 
 Two things in the overlay are Lauren's own words, generalized. `teach` already says "Those are real skill invocations". `poteto-agent` already says that substituting another agent "skips that read and drifts". She had patched this failure in two places. The fork applies the same patch everywhere a skill is named.
 
@@ -38,10 +38,10 @@ Two things in the overlay are Lauren's own words, generalized. `teach` already s
 
 The fork edits upstream only at the places where upstream already differs between Cursor and Claude Code, plus the front door.
 
-- **`skills/poteto-mode/SKILL.md`** gets the section "Running a skill", above "Non-negotiables". It holds the rule, the reason, the table, and the todo and reply rules. It sits near the top because Claude Code keeps the first 5,000 tokens of a skill after a compaction.
-- **`docs/harness/claude-code.md`** gets the same rule and table as "Running a pstack skill", for sessions that start from another skill.
-- **Every other skill that sends you to a skill** gets one paragraph under its heading, 18 of them today. It states the rule in four sentences and points at the adapter section. One of them, `blast-radius`, sends you to skills upstream without saying how to run them in Claude Code. `poteto-help` gets none, because it names skills to describe them and must not start work.
-- **`skills/poteto-mode/worker.md`** gets one bullet, so a subagent that never saw `poteto-mode` still reads a skill its kickoff names.
+- **`skills/poteto-mode/SKILL.md`** gets the section "Running a skill", above "Non-negotiables". It holds the rule, the non-exceptions, the doubt rule, the reason, the table, and the todo, delegation and reply rules. It sits near the top because Claude Code keeps the first 5,000 tokens of a skill after a compaction.
+- **`docs/harness/claude-code.md`** gets the same rule, non-exceptions and table as "Running a pstack skill", for sessions that start from another skill.
+- **Every other skill that sends you to a skill** gets one paragraph under its heading, 18 of them today. It states the rule in three sentences and points at the adapter section. One of them, `blast-radius`, sends you to skills upstream without saying how to run them in Claude Code. `poteto-help` gets none, because it names skills to describe them and must not start work.
+- **`skills/poteto-mode/worker.md`** gets two bullets. A `poteto-agent` reads `poteto-mode` in full, so it has the whole section. Every other agent a run starts sees only its kickoff and `worker.md`. The first bullet makes it read a skill its kickoff names. The second makes it list the skill files it read, so the parent can check. `poteto-mode` in turn tells the parent to put the skill's path in the kickoff.
 - **Install commands** in the README, guide page 1, and `poteto-help` name this marketplace. The manifest version is upstream's with `-sp.N` appended, because Claude Code keeps you on a version until the string changes.
 
 The source of each piece is a file in [`fork/overlay`](./fork/overlay). Edit it there, raise `revision` in [`fork/fork.json`](./fork/fork.json), and run `fork/sync.sh`.
@@ -50,26 +50,50 @@ The source of each piece is a file in [`fork/overlay`](./fork/overlay). Edit it 
 
 Nothing is measured yet. The overlay is a hypothesis.
 
-The table's rows have two sources. Four are adapted from superpowers' own red-flags table, which its authors tuned against real sessions: knowing the word, the small task, having read it earlier, and doing it at the end. Five come from how pstack loads skills in Claude Code: the playbook file, the principles index, the refusing `Skill` tool, the context window, and the subagent. None has been observed failing on pstack by this fork. Superpowers' rule for this is strict: write the table from excuses you watched an agent make.
+The maintainer of this fork has watched upstream `poteto-mode` skip skills in real sessions. That is the reason the fork exists. It is an observation, not a number, and the harness below has not reproduced it yet.
 
-[`evals/`](./evals) is the measurement. It follows upstream's [eval playbook](./skills/poteto-mode/playbooks/eval.md): an organic prompt, and chain-following graded from the files the agent opened, never from what it says.
+The table's rows have two sources. Four are adapted from superpowers' own red-flags table, which its authors tuned against real sessions: knowing the word, the small task, having read it earlier, and doing it at the end. Five come from how pstack loads skills in Claude Code: the playbook file, the principles index, the refusing `Skill` tool, the context window, and the subagent. Superpowers' rule for this is strict: write the table from excuses you watched an agent make. The harness collects them.
+
+## The test harness
+
+`fork/eval.sh` runs the same prompts against upstream and against this fork with `claude plugin eval`, then prints one table. It follows upstream's [eval playbook](./skills/poteto-mode/playbooks/eval.md): an organic prompt, nothing in reach of the run that says what is measured, and chain-following read from the files the agent opened, never from what it says.
 
 ```bash
-fork/eval.sh            # three runs of each case against upstream, then against this fork
-fork/eval.sh --runs 5
+fork/eval.sh --pilot                 # 4 sessions: one run of each read-only case, upstream alone
+fork/eval.sh                         # 24 sessions: three runs of each, upstream and this fork
+fork/eval.sh --also v0.15.48-sp.1    # 36 sessions: adds the quiet wording as a third variant
+fork/eval.sh --tier write            # 6 sessions: the code-change case
 ```
 
-Each run is a real Claude Code session on your account. The three cases are read-only, so they need no tool grants.
+Every session is a real Claude Code session on your account. Add `--model <name>` to pin the model you saw the skips on. Any other option goes to `claude plugin eval`.
 
-| Case | Entry | Reads it checks |
-| --- | --- | --- |
-| `explain-retry` | `/pstack:poteto-mode` | the adapter, the investigation playbook, `unslop` |
-| `why-five-attempts` | `/pstack:poteto-mode` | the investigation playbook, `why`, `unslop` |
-| `teach-retry` | `/pstack:teach` | `how`, `why`, `unslop` |
+**Run the pilot first.** It answers whether the harness reproduces what you saw. If upstream reads every skill in the pilot, the cases are too easy, and a comparison would show nothing. Make the cases harder before you spend the larger run.
 
-If upstream already scores near 1.0 on your model, the overlay is not earning its place and you should say so. If the fork scores higher, open the reports and read what the agent said when it skipped. Those sentences belong in the table in place of the guessed rows.
+Each run starts in a small sample project, [`fork/suite/project`](./fork/suite/project), a service with one planted bug. The cases are in [`fork/suite/cases`](./fork/suite/cases).
 
-The suite does not yet cover a code change, a subagent, or a compaction. Those need write tools and longer runs.
+| Case | Tier | Prompt, in short | Reads the steps call for |
+| --- | --- | --- | --- |
+| `explain-retry` | read | how does retry work, is the backoff right | the adapter, the investigation playbook, `unslop` |
+| `why-five-attempts` | read | why five attempts | the investigation playbook, `why`, `unslop` |
+| `review-retry` | read | this file is hard to follow | the investigation playbook, the `minimize-reader-load` leaf, `unslop` |
+| `teach-retry` | read | `/pstack:teach` on retries | the adapter, `how`, `why`, `unslop` |
+| `fix-refund` | write | a refund hangs, fix it | the bug-fix playbook, `tdd`, the `fix-root-causes` and `prove-it-works` leaves, `technical-writing`, `unslop` |
+
+The report has four parts.
+
+- **Reads the steps call for.** One row per case and skill, one column per variant, each cell runs that read it out of runs that finished. This is the result.
+- **Restraint.** The strong wording could make the agent read skills no step sent it to. Each case caps the number of skill files read, and `explain-retry` requires that `architect` stays unread, because its playbook says so.
+- **Cost.** Mean turns and dollars per run, so you see what the extra reads cost.
+- **Every pstack file read**, and what each subagent kickoff named, taken from the transcripts.
+
+It also writes `misses.md`: what the agent said in every run that skipped a read. Those sentences replace the guessed rows of the table.
+
+What the harness does not show yet:
+
+- **Long sessions.** A run is one prompt. Skips after a compaction, or late in a long task, are out of reach.
+- **Subagents, with confidence.** The write case lets the agent delegate, and the report counts kickoffs that name `worker.md` and a skill file. Whether a subagent's own reads reach the transcript is unverified.
+- **The write case at all.** It needs Claude Code's shell sandbox: built in on macOS, `bubblewrap` and `socat` on Linux. It was built without one and has never run.
+- **Anything, on a real model.** The scripts were tested up to the model call, and the report on made-up transcripts. No session has run.
 
 ## Keeping up with upstream
 

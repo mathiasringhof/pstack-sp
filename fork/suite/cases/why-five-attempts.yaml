@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: why-five-attempts
+tags: [read]
+runs: 3
+execution:
+  prompt: "/pstack:poteto-mode why do we stop after five attempts? is that still the right number?"
+  max_turns: 40
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, TodoWrite]
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: reads-playbook-investigation
+    type: tool_used
+    tool: Read
+    input_match: 'playbooks/investigation\.md'
+  - name: reads-why
+    type: tool_used
+    tool: Read
+    input_match: 'skills/why/SKILL\.md'
+  - name: reads-unslop
+    type: tool_used
+    tool: Read
+    input_match: 'skills/unslop/SKILL\.md'
+  - name: keeps-skill-reads-under-13
+    type: tool_used
+    tool: Read
+    input_match: 'skills/[^/"]+/SKILL\.md'
+    min: 0
+    max: 12
