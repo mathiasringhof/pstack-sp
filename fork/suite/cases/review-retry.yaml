@@ -10,10 +10,10 @@ execution:
 context:
   scaffold_script: setup.sh
 graders:
-  - name: reads-playbook-investigation
+  - name: reads-playbook-investigation-or-refactoring
     type: tool_used
     tool: Read
-    input_match: 'playbooks/investigation\.md'
+    input_match: 'playbooks/(?:investigation|refactoring)\.md'
   - name: reads-principle-minimize-reader-load
     type: tool_used
     tool: Read

@@ -75,7 +75,7 @@ Each run starts in a small sample project, [`fork/suite/project`](./fork/suite/p
 | --- | --- | --- | --- |
 | `explain-retry` | read | how does retry work, is the backoff right | the adapter, the investigation playbook, `unslop` |
 | `why-five-attempts` | read | why five attempts | the investigation playbook, `why`, `unslop` |
-| `review-retry` | read | this file is hard to follow | the investigation playbook, the `minimize-reader-load` leaf, `unslop` |
+| `review-retry` | read | this file is hard to follow | the investigation or refactoring playbook (either counts: the prompt fits both), the `minimize-reader-load` leaf, `unslop` |
 | `teach-retry` | read | `/pstack:teach` on retries | the adapter, `how`, `why`, `unslop` |
 | `fix-refund` | write | a refund hangs, fix it | the bug-fix playbook, `tdd`, the `fix-root-causes` and `prove-it-works` leaves, `technical-writing`, `unslop` |
 
