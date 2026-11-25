@@ -6,7 +6,7 @@
 #   fork/eval.sh                          read-only cases, three runs each, upstream and this fork
 #   fork/eval.sh --pilot                  one run of each read-only case on upstream alone
 #   fork/eval.sh --tier write             the code-change case (needs Write, Edit, Bash in a sandbox)
-#   fork/eval.sh --also v0.15.48-sp.1     add a third variant from a git ref of this repository
+#   fork/eval.sh --also c4d4bf1          add a third variant from a git ref of this repository
 #   fork/eval.sh --runs 5 --model opus    any other option goes to `claude plugin eval`
 #
 # Each variant is copied to a folder with a plain name, and the cases sit in it as `samples/`,

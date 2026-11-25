@@ -30,7 +30,7 @@ Superpowers gets skills called with more than its hook. The hook only puts the r
 | Commitment: announce the skill, one todo per item | Yes | The agent writes `Running <name>` and the path before it acts. One todo item per skill the playbook sends it to. The reply names each skill it ran, and any step it did without its skill. The last two extend rules `poteto-mode` already has for playbook steps and for principles. |
 | "Use when" descriptions that never summarize the skill | No | The agent never sees a pstack description, so there is nothing to tune. The same hazard exists in the principles index, and one row of the table covers it. |
 | "If there is a 1% chance a skill applies, invoke it" | Adapted | Superpowers needs it because its agent must judge which listed skill is relevant. Here you and the step have already chosen the skill. One judgment remains, whether a trigger fired, so the lever goes there: "If you are unsure whether a trigger fired, it fired." It adds no skill and sends the agent looking for none. |
-| Loud markup and capitals | Partly | One bold rule with one `MUST`, in `poteto-mode`, the adapter, the routing paragraph, and `worker.md`. No tags, and no line of capitals. Revision 1 had none of this and is tagged `v0.15.48-sp.1`, so the two can be measured against each other. |
+| Loud markup and capitals | Partly | One bold rule with one `MUST`, in `poteto-mode`, the adapter, the routing paragraph, and `worker.md`. No tags, and no line of capitals. Revision 1 had none of this. It is commit `c4d4bf1`, so the two can be measured against each other. |
 
 Two things in the overlay are Lauren's own words, generalized. `teach` already says "Those are real skill invocations". `poteto-agent` already says that substituting another agent "skips that read and drifts". She had patched this failure in two places. The fork applies the same patch everywhere a skill is named.
 
@@ -61,7 +61,7 @@ The table's rows have two sources. Four are adapted from superpowers' own red-fl
 ```bash
 fork/eval.sh --pilot                 # 4 sessions: one run of each read-only case, upstream alone
 fork/eval.sh                         # 24 sessions: three runs of each, upstream and this fork
-fork/eval.sh --also v0.15.48-sp.1    # 36 sessions: adds the quiet wording as a third variant
+fork/eval.sh --also c4d4bf1         # 36 sessions: adds the quiet wording as a third variant
 fork/eval.sh --tier write            # 6 sessions: the code-change case
 ```
 
