@@ -1,0 +1,4 @@
+- Not for a small task.
+- Not for a skill whose name you understand.
+- Not because the `Skill` tool refused. It always refuses. `Read` the file.
+- Not because you read it before a compaction.

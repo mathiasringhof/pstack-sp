@@ -1,10 +1,16 @@
 ## Running a pstack skill
 
-When a step sends you to a pstack skill, that is a real skill invocation. Read that skill's `SKILL.md` in full at `<pstack>/skills/<name>/SKILL.md`, then follow it, before you act. Read it when its step comes, not before. The same holds inside that skill.
+**When a step sends you to a pstack skill, you MUST read that skill's `SKILL.md` in full, at `<pstack>/skills/<name>/SKILL.md`, before you act on the step. You do not have a choice.**
+
+The operator ran pstack to get these skills run, not paraphrased. A skill you did not read this session is a skill you did not run. No exceptions:
+
+{{no-exceptions}}
+
+Read each skill when its step comes, not before. The same rule holds inside every skill you read.
 
 pstack skills only load from a slash command. Your skill list hides all but the setup skill, and the `Skill` tool refuses the rest. So a skill reaches you only when you `Read` its file. Working from the name skips that read and drifts.
 
-Each of these thoughts means you are about to skip a skill.
+These thoughts mean stop. You are talking yourself out of a read.
 
 {{excuses}}
 

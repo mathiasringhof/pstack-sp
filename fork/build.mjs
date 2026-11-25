@@ -25,11 +25,14 @@ if (!args.includes("--upstream") || !upstreamDir || !existsSync(join(upstreamDir
 
 const config = JSON.parse(readFileSync(join(FORK, "fork.json"), "utf8"));
 const pin = JSON.parse(readFileSync(join(FORK, "upstream.json"), "utf8"));
-const overlay = (name) => readFileSync(join(FORK, "overlay", name), "utf8").trimEnd();
-const excuses = overlay("excuses.md");
+// `{{name}}` in an overlay file stands for fork/overlay/<name>.md, so shared text has one source.
+const overlay = (name) =>
+  readFileSync(join(FORK, "overlay", name), "utf8")
+    .trimEnd()
+    .replace(/\{\{([a-z-]+)\}\}/g, (_, part) => overlay(`${part}.md`));
 const OVERLAY = {
-  poteto: overlay("poteto-mode-section.md").replace("{{excuses}}", excuses),
-  adapter: overlay("adapter-section.md").replace("{{excuses}}", excuses),
+  poteto: overlay("poteto-mode-section.md"),
+  adapter: overlay("adapter-section.md"),
   routing: overlay("routing-paragraph.md"),
   worker: overlay("worker-bullet.md"),
   banner: overlay("readme-banner.md"),
@@ -128,7 +131,7 @@ edit("skills/poteto-mode/SKILL.md", "## Non-negotiables\n", `${OVERLAY.poteto}\n
 
 // 3. worker.md is how the operator's rules reach an agent that never saw poteto-mode.
 const firstBullet = text("skills/poteto-mode/worker.md").match(/^- If you start an agent, .*$/m)?.[0] ?? "- If you start an agent, ";
-edit("skills/poteto-mode/worker.md", firstBullet, `${firstBullet}\n${OVERLAY.worker}`, "one bullet on skills a kickoff names");
+edit("skills/poteto-mode/worker.md", firstBullet, `${firstBullet}\n${OVERLAY.worker}`, "two bullets on skills a kickoff names");
 
 // 4. The adapter holds the same rule for every other entry point.
 edit(ADAPTER, "## Tools\n", `${OVERLAY.adapter}\n\n## Tools\n`, 'section "Running a pstack skill"');

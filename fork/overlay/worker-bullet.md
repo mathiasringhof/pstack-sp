@@ -1,1 +1,2 @@
-- When your kickoff sends you to a pstack skill, that is a real skill invocation. Read `<path>/../<name>/SKILL.md` in full before you act on it, with `<path>` the folder that holds this file. Your skill list hides these skills, so a missing entry does not mean the skill is absent.
+- When your kickoff names a pstack skill, you MUST read `<path>/../<name>/SKILL.md` in full before you act on that step, with `<path>` the folder that holds this file. No exceptions for a small task or a name you understand. Your skill list hides these skills and the `Skill` tool refuses them, so `Read` is the only way in.
+- In your report, list each skill file you read. Never claim a skill you did not read.
