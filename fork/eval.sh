@@ -7,6 +7,7 @@
 #   fork/eval.sh --pilot                  one run of each read-only case on upstream alone
 #   fork/eval.sh --tier write             the code-change case (needs Write, Edit, Bash in a sandbox)
 #   fork/eval.sh --also c4d4bf1          add a third variant from a git ref of this repository
+#   fork/eval.sh --effort medium          effort for every session (sets CLAUDE_CODE_EFFORT_LEVEL)
 #   fork/eval.sh --runs 5 --model opus    any other option goes to `claude plugin eval`
 #
 # Each variant is copied to a folder with a plain name, and the cases sit in it as `samples/`,
@@ -28,6 +29,7 @@ while [ $# -gt 0 ]; do
     --tier) tier="$2"; shift 2 ;;
     --also) also+=("$2"); shift 2 ;;
     --pilot) pilot=true; shift ;;
+    --effort) export CLAUDE_CODE_EFFORT_LEVEL="$2"; shift 2 ;;
     *) pass+=("$1"); shift ;;
   esac
 done
@@ -37,6 +39,7 @@ case "$tier" in read|write|all) ;; *) echo "--tier takes read, write, or all" >&
 tree="$cache/upstream/$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).path)' "$here/upstream.json")"
 work="$cache/runs/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$work/out"
+printf '%s\n' "${CLAUDE_CODE_EFFORT_LEVEL:-}" > "$work/out/effort.txt"
 
 names=()
 labels=()

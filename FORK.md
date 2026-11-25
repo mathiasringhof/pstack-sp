@@ -65,7 +65,7 @@ fork/eval.sh --also c4d4bf1         # 36 sessions: adds the quiet wording as a t
 fork/eval.sh --tier write            # 6 sessions: the code-change case
 ```
 
-Every session is a real Claude Code session on your account. Add `--model <name>` to pin the model you saw the skips on. Any other option goes to `claude plugin eval`.
+Every session is a real Claude Code session on your account. Add `--model <name>` to pin the model you saw the skips on, and `--effort <level>` to pin its effort. Any other option goes to `claude plugin eval`.
 
 **Run the pilot first.** It answers whether the harness reproduces what you saw. If upstream reads every skill in the pilot, the cases are too easy, and a comparison would show nothing. Make the cases harder before you spend the larger run.
 

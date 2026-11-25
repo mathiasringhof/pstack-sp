@@ -8,7 +8,7 @@
 //   node fork/report.mjs <out dir of one fork/eval.sh run>
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 const out = process.argv[2];
 if (!out || !existsSync(join(out, "variants.tsv"))) {
@@ -37,9 +37,12 @@ function* blocks(value) {
     for (const child of Object.values(value)) yield* blocks(child);
   }
 }
-function readTrace(path) {
+// A pstack file is any file under the plugin root the run loaded, named by its path from that root.
+// Matching on `skills/` alone would miss agents/worker.md and count skill files from other places.
+function readTrace(path, root) {
   if (!path || !existsSync(path)) return null;
-  const trace = { files: new Set(), agents: 0, withWorker: 0, withSkillPath: 0, said: [] };
+  const prefix = `${resolve(root)}/`;
+  const trace = { files: new Set(), agents: 0, withWorker: 0, withSkillPath: 0, timeline: [], sawCases: [] };
   for (const line of readFileSync(path, "utf8").split("\n")) {
     let message;
     try {
@@ -49,12 +52,17 @@ function readTrace(path) {
     }
     const fromAgent = message.type === "assistant" || message.message?.role === "assistant";
     for (const block of blocks(message)) {
-      if (block.type === "text" && fromAgent && typeof block.text === "string") trace.said.push(block.text.trim());
+      if (block.type === "text" && fromAgent && typeof block.text === "string" && block.text.trim()) trace.timeline.push({ said: block.text.trim() });
       if (block.type !== "tool_use") continue;
       const input = JSON.stringify(block.input ?? {});
-      if (block.name === "Read") {
-        const file = input.match(/(?:skills\/[^"]+?\.md|docs\/harness\/[^"]+?\.md)/)?.[0];
-        if (file) trace.files.add(file);
+      // The cases sit in the plugin as samples/. A run that looks there can see what is checked.
+      if (input.includes(`${prefix}samples`)) trace.sawCases.push(`${block.name} ${input.slice(0, 200)}`);
+      if (block.name === "Read" && typeof block.input?.file_path === "string") {
+        const file = resolve(block.input.file_path);
+        if (file.startsWith(prefix)) {
+          trace.files.add(file.slice(prefix.length));
+          trace.timeline.push({ read: file.slice(prefix.length) });
+        }
       }
       if (block.name === "Agent" || block.name === "Task") {
         trace.agents += 1;
@@ -76,11 +84,12 @@ const table = (head, rows) => {
 };
 const labels = variants.map((variant) => variant.label);
 
+const effort = existsSync(join(out, "effort.txt")) ? readFileSync(join(out, "effort.txt"), "utf8").trim() || "default" : "not recorded";
 lines.push("# Do the runs read the skills the steps send them to?", "");
 for (const variant of variants) {
   const { result } = variant;
   const plugin = result.suite?.plugins?.[0];
-  lines.push(`- **${variant.label}**: pstack ${plugin?.version ?? "?"}, Claude Code ${result.claudeVersion}${result.partial ? `. Stopped early (${result.partialReason}), so its numbers are not comparable` : ""}.`);
+  lines.push(`- **${variant.label}**: pstack ${plugin?.version ?? "?"}, Claude Code ${result.claudeVersion}, model ${result.suite?.modelOverride ?? "default"}, effort ${effort}${result.partial ? `. Stopped early (${result.partialReason}), so its numbers are not comparable` : ""}.`);
 }
 lines.push("", "Each cell is runs that passed the check out of runs that finished.", "");
 
@@ -121,9 +130,10 @@ table(
 );
 
 const misses = [];
+const leaks = [];
 let traces = 0;
 for (const name of cases) {
-  const perVariant = variants.map((variant) => runsOf(variant, name).filter(graded).map((run) => ({ run, trace: readTrace(run.tracePath) })));
+  const perVariant = variants.map((variant) => runsOf(variant, name).filter(graded).map((run) => ({ run, trace: readTrace(run.tracePath, variant.result.suite?.plugins?.[0]?.path ?? join(out, "..", variant.dir)) })));
   const files = [...new Set(perVariant.flatMap((runs) => runs.flatMap(({ trace }) => (trace ? [...trace.files] : []))))].sort();
   traces += perVariant.flat().filter(({ trace }) => trace).length;
   if (files.length > 0) {
@@ -143,19 +153,23 @@ for (const name of cases) {
   }
   perVariant.forEach((runs, index) => {
     runs.forEach(({ run, trace }, number) => {
+      if (trace?.sawCases.length) leaks.push(`- ${labels[index]}, ${name}, run ${number + 1}: ${trace.sawCases.map((call) => `\`${call}\``).join("; ")}`);
       const skipped = (run.graders ?? []).filter((grader) => grader.name.startsWith("reads-") && !grader.passed).map((grader) => grader.name);
       if (skipped.length === 0) return;
-      misses.push(`## ${labels[index]}, ${name}, run ${number + 1}`, "", `Skipped: ${skipped.join(", ")}`, "", trace ? trace.said.filter(Boolean).join("\n\n").slice(0, 6000) : "(no transcript kept)", "");
+      // In order, so the words around each read (or where a read should have been) stay in place.
+      const timeline = trace ? trace.timeline.map((event) => (event.read ? `→ Read \`${event.read}\`` : event.said)).join("\n\n") : "(no transcript kept)";
+      misses.push(`## ${labels[index]}, ${name}, run ${number + 1}`, "", `Skipped: ${skipped.join(", ")}`, "", timeline.length > 8000 ? `${timeline.slice(0, 8000)}\n\n(cut at 8000 characters)` : timeline, "");
     });
   });
 }
+if (leaks.length) lines.push("## Runs that looked at the cases", "", "These runs touched `samples/` in the plugin, where the checks are written down. Treat their results as unblinded.", "", ...leaks, "");
 if (traces === 0) lines.push("No transcript was found, so the list of every file read is missing. The checks above do not need it.", "");
 
 const allZero = variants.every((variant) => variant.result.cases.every((item) => (item.arms?.with ?? []).every((run) => !(run.graders ?? []).some((grader) => grader.name.startsWith("reads-") && grader.passed))));
 if (allZero) lines.push("**Every read check failed in every variant.** That usually means the runs never loaded the skill at all: look for a sign-in error above, or check that a prompt starting with `/pstack:` expands in `claude -p` on this Claude Code version.", "");
 
 writeFileSync(join(out, "report.md"), `${lines.join("\n")}\n`);
-writeFileSync(join(out, "misses.md"), misses.length ? `# What the agent said in runs that skipped a read\n\n${misses.join("\n")}\n` : "No run skipped a read.\n");
+writeFileSync(join(out, "misses.md"), misses.length ? `# What the agent said in runs that skipped a read\n\nEach run in order: the text the agent showed, and \`→\` for each pstack file it read. Thinking is not kept in the trace, so a skip with no text before the answer has no stated reason.\n\n${misses.join("\n")}\n` : "No run skipped a read.\n");
 console.log(lines.join("\n"));
 console.log(`Saved: ${join(out, "report.md")}`);
 console.log(`What the agent said when it skipped: ${join(out, "misses.md")}`);
