@@ -90,6 +90,23 @@ function readTrace(path, root, caseNames) {
   return trace;
 }
 
+// A run whose agent waits on background subagents ends its turn and resumes once per report, so the trace holds
+// one result per resumption. `claude plugin eval` keeps the last one's num_turns. Add them all up instead.
+// total_cost_usd is already the session's running total, so cost needs no change.
+function turnsOf(run) {
+  if (!run.tracePath || !existsSync(run.tracePath)) return run.turns ?? 0;
+  const results = readFileSync(run.tracePath, "utf8")
+    .split("\n")
+    .flatMap((line) => {
+      try {
+        const message = JSON.parse(line);
+        return message.type === "result" && typeof message.num_turns === "number" ? [message.num_turns] : [];
+      } catch {
+        return [];
+      }
+    });
+  return results.length ? results.reduce((sum, turns) => sum + turns, 0) : run.turns ?? 0;
+}
 const runsOf = (variant, name) => variant.result.cases.find((item) => item.name === name)?.arms?.with ?? [];
 // A run that timed out or hit its turn cap is still graded on what it did. One that never reached the model is not.
 const graded = (run) => (run.graders ?? []).length > 0 && !/not logged in|authentication|api error|usage limit|rate limit|cannot confine/i.test(run.error ?? "");
@@ -140,7 +157,8 @@ table(
     name,
     ...variants.flatMap((variant) => {
       const runs = runsOf(variant, name).filter(graded);
-      const mean = (key) => (runs.length ? (runs.reduce((sum, run) => sum + (run[key] ?? 0), 0) / runs.length).toFixed(key === "turns" ? 0 : 2) : "no run");
+      const value = (run, key) => (key === "turns" ? turnsOf(run) : run[key] ?? 0);
+      const mean = (key) => (runs.length ? (runs.reduce((sum, run) => sum + value(run, key), 0) / runs.length).toFixed(key === "turns" ? 0 : 2) : "no run");
       return [mean("turns"), mean("costUsd")];
     }),
   ]),
