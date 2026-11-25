@@ -48,9 +48,9 @@ The source of each piece is a file in [`fork/overlay`](./fork/overlay). Edit it 
 
 ## What is measured, and what is not
 
-Nothing is measured yet. The overlay is a hypothesis.
+A pilot and a first comparison have run on one machine, on Opus 5.5 at medium effort. Their numbers are not recorded here yet. Until they are, read the overlay as a hypothesis.
 
-The maintainer of this fork has watched upstream `poteto-mode` skip skills in real sessions. That is the reason the fork exists. It is an observation, not a number, and the harness below has not reproduced it yet.
+The maintainer of this fork has watched upstream `poteto-mode` skip skills in real sessions. That is the reason the fork exists. It is an observation, not a number.
 
 The table's rows have two sources. Four are adapted from superpowers' own red-flags table, which its authors tuned against real sessions: knowing the word, the small task, having read it earlier, and doing it at the end. Five come from how pstack loads skills in Claude Code: the playbook file, the principles index, the refusing `Skill` tool, the context window, and the subagent. Superpowers' rule for this is strict: write the table from excuses you watched an agent make. The harness collects them.
 
@@ -91,9 +91,9 @@ It also writes `misses.md`: what the agent said in every run that skipped a read
 What the harness does not show yet:
 
 - **Long sessions.** A run is one prompt. Skips after a compaction, or late in a long task, are out of reach.
-- **Subagents, with confidence.** The write case lets the agent delegate, and the report counts kickoffs that name `worker.md` and a skill file. Whether a subagent's own reads reach the transcript is unverified.
+- **Subagents, with confidence.** The write case lets the agent delegate, and the report counts kickoffs that name `worker.md` and a skill file. In the pilot, subagent tool calls did reach the transcript. How reliably is not known.
 - **The write case at all.** It needs Claude Code's shell sandbox: built in on macOS, `bubblewrap` and `socat` on Linux. It was built without one and has never run.
-- **Anything, on a real model.** The scripts were tested up to the model call, and the report on made-up transcripts. No session has run.
+- **More than one setup.** Every session so far ran on one machine, on Opus 5.5 at medium effort.
 
 ## Keeping up with upstream
 

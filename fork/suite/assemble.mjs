@@ -31,8 +31,10 @@ const setup = [
   '  git -c user.name="Dana Okafor" -c user.email="dana@orders.example" commit -q -m "retry failed provider calls with backoff"',
   '  git config user.name "Dana Okafor" && git config user.email "dana@orders.example"',
   // The sandbox home gets a git identity named after the tool that made it. Replace it, but only
-  // when this workspace sits directly in $HOME, as the sandbox lays it out (home/cwd).
-  '  if [ -f "$HOME/.gitconfig" ] && [ "$(cd .. && pwd -P)" = "$(cd "$HOME" && pwd -P)" ]; then',
+  // when this workspace sits directly in $HOME, as the sandbox lays it out (home/cwd), and only
+  // when the identity there is a placeholder. A person who runs this script by hand in a folder
+  // under their own home keeps their git identity.
+  '  if [ -f "$HOME/.gitconfig" ] && [ "$(cd .. && pwd -P)" = "$(cd "$HOME" && pwd -P)" ] && case "$(git config --global user.email || true)" in *@example.invalid) true ;; *) false ;; esac; then',
   '    git config --global user.name "Dana Okafor" && git config --global user.email "dana@orders.example"',
   "  fi",
   "fi",
